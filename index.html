@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Text Converters</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Password Manager</title>
   <style>
     :root {
       --bg-light: #f7f7f5;
@@ -13,10 +11,8 @@
       --text-dark: #fff;
       --card-light: #f1f1f1;
       --card-dark: #2c2c2c;
-      --button-bg-light: #000;
-      --button-text-light: #fff;
-      --button-bg-dark: #fff;
-      --button-text-dark: #000;
+      --button-bg: #000;
+      --button-text: #fff;
     }
 
     [data-theme="light"] {
@@ -117,64 +113,56 @@
     .output-box {
       min-height: 30px;
     }
+    
   </style>
 </head>
 <body>
-  <h1>Text Converters</h1>
+  <h1>Password Manager</h1>
   <div class="converter-container">
     <div class="card">
-      <h2>To Uppercase</h2>
-      <textarea id="input1" placeholder="Enter text..."></textarea>
-      <div class="output-box">
-        <div class="output" id="output1"></div>
-      </div>
-      <button onclick="convertText('input1', 'output1', 'upper')">Convert</button>
+      <h2>Encryptor</h2>
+      <textarea id="textInput" placeholder="Enter text..."></textarea>
+      <div class="output output-box" id="hexOutput"></div>
+      <button onclick="copyToClipboard('hexOutput')">Copy</button>
     </div>
+
     <div class="card">
-      <h2>To Lowercase</h2>
-      <textarea id="input2" placeholder="Enter text..."></textarea>
-      <div class="output-box">
-        <div class="output" id="output2"></div>
-      </div>
-      <button onclick="convertText('input2', 'output2', 'lower')">Convert</button>
-    </div>
-    <div class="card">
-      <h2>Capitalize Each Word</h2>
-      <textarea id="input3" placeholder="Enter text..."></textarea>
-      <div class="output-box">
-        <div class="output" id="output3"></div>
-      </div>
-      <button onclick="convertText('input3', 'output3', 'capitalize')">Convert</button>
+      <h2>Decryptor</h2>
+      <textarea id="hexInput" placeholder="Enter hex..."></textarea>
+      <div class="output output-box" id="textOutput"></div>
+      <button onclick="copyToClipboard('textOutput')">Copy</button>
     </div>
   </div>
 
-  <button class="toggle-btn" onclick="toggleTheme()">Toggle Theme</button>
+  <button class="toggle-btn" onclick="toggleTheme()">Toggle Dark/Light</button>
 
   <script>
-    function convertText(inputId, outputId, type) {
-      const input = document.getElementById(inputId).value;
-      let result;
-      switch (type) {
-        case 'upper':
-          result = input.toUpperCase();
-          break;
-        case 'lower':
-          result = input.toLowerCase();
-          break;
-        case 'capitalize':
-          result = input.replace(/\b\w/g, c => c.toUpperCase());
-          break;
-        default:
-          result = input;
-      }
-      document.getElementById(outputId).textContent = result;
+    const textInput = document.getElementById("textInput");
+    const hexOutput = document.getElementById("hexOutput");
+    const hexInput = document.getElementById("hexInput");
+    const textOutput = document.getElementById("textOutput");
+
+    textInput.addEventListener("input", () => {
+      hexOutput.textContent = [...textInput.value]
+        .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join(" ");
+    });
+
+    hexInput.addEventListener("input", () => {
+      textOutput.textContent = hexInput.value
+        .split(" ")
+        .map(hex => String.fromCharCode(parseInt(hex, 16)))
+        .join("");
+    });
+
+    function copyToClipboard(id) {
+      const text = document.getElementById(id).textContent;
+      navigator.clipboard.writeText(text);
     }
 
     function toggleTheme() {
       const html = document.documentElement;
-      const currentTheme = html.getAttribute("data-theme");
-      const newTheme = currentTheme === "light" ? "dark" : "light";
-      html.setAttribute("data-theme", newTheme);
+      html.dataset.theme = html.dataset.theme === "light" ? "dark" : "light";
     }
   </script>
 </body>
