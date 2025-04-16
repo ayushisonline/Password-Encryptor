@@ -122,6 +122,10 @@
     <div class="card">
       <h2>Encryptor</h2>
       <textarea id="textInput" placeholder="Enter text..."></textarea>
+      <label>
+  <input type="checkbox" id="spaceToggle">
+  Add space between hex characters
+</label>
       <div class="output output-box" id="hexOutput"></div>
       <button onclick="copyToClipboard('hexOutput')">Copy</button>
     </div>
@@ -137,33 +141,47 @@
   <button class="toggle-btn" onclick="toggleTheme()">Toggle Dark/Light</button>
 
   <script>
-    const textInput = document.getElementById("textInput");
-    const hexOutput = document.getElementById("hexOutput");
-    const hexInput = document.getElementById("hexInput");
-    const textOutput = document.getElementById("textOutput");
+  const textInput = document.getElementById("textInput");
+  const hexOutput = document.getElementById("hexOutput");
+  const hexInput = document.getElementById("hexInput");
+  const textOutput = document.getElementById("textOutput");
+  const spaceToggle = document.getElementById("spaceToggle");
 
-    textInput.addEventListener("input", () => {
-      hexOutput.textContent = [...textInput.value]
-        .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
-        .join(" ");
-    });
+  // Encode to Hex with optional spacing
+  function updateHexOutput() {
+    const useSpacing = spaceToggle.checked;
+    hexOutput.textContent = [...textInput.value]
+      .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
+      .join(useSpacing ? " " : "");
+  }
 
-    hexInput.addEventListener("input", () => {
-      textOutput.textContent = hexInput.value
-        .split(" ")
-        .map(hex => String.fromCharCode(parseInt(hex, 16)))
-        .join("");
-    });
+  textInput.addEventListener("input", updateHexOutput);
+  spaceToggle.addEventListener("change", updateHexOutput);
 
-    function copyToClipboard(id) {
-      const text = document.getElementById(id).textContent;
-      navigator.clipboard.writeText(text);
+  // Decode from Hex (supports both spaced and unspaced hex)
+  hexInput.addEventListener("input", () => {
+    const hex = hexInput.value.trim();
+
+    let chars = [];
+    if (hex.includes(" ")) {
+      chars = hex.split(" ").map(h => parseInt(h, 16));
+    } else {
+      chars = hex.match(/.{1,2}/g)?.map(h => parseInt(h, 16)) || [];
     }
 
-    function toggleTheme() {
-      const html = document.documentElement;
-      html.dataset.theme = html.dataset.theme === "light" ? "dark" : "light";
-    }
-  </script>
+    textOutput.textContent = chars.map(c => String.fromCharCode(c)).join("");
+  });
+
+  function copyToClipboard(id) {
+    const text = document.getElementById(id).textContent;
+    navigator.clipboard.writeText(text);
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    html.dataset.theme = html.dataset.theme === "light" ? "dark" : "light";
+  }
+</script>
+  
 </body>
 </html>
