@@ -6,107 +6,163 @@
   <title>Password Manager</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #f5f5f5;
-      text-align: center;
+      font-family: Arial, sans-serif;
+      margin: 0;
       padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f7f7f7;
+      transition: background-color 0.3s, color 0.3s;
+      color: #111;
+    }
+
+    body.dark {
+      background-color: #121212;
+      color: #f1f1f1;
+    }
+
+    h1 {
+      margin-bottom: 30px;
     }
 
     .container {
       display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin-top: 30px;
+      gap: 40px;
     }
 
-    .box {
-      background: #e8e8e8;
+    .panel {
+      background-color: #eee;
       padding: 20px;
-      border-radius: 16px;
+      border-radius: 10px;
       width: 300px;
+      transition: background-color 0.3s;
     }
 
-    .box textarea {
+    body.dark .panel {
+      background-color: #1f1f1f;
+    }
+
+    textarea {
       width: 100%;
       height: 100px;
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #000;
       resize: none;
-    }
-
-    .output-box {
-      height: 80px;
-    }
-
-    .copy-btn {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
       margin-top: 10px;
+      margin-bottom: 10px;
+      font-family: monospace;
+      font-size: 14px;
+      background-color: #fff;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s, border 0.3s;
+    }
+
+    body.dark textarea {
+      background-color: #2a2a2a;
+      color: #f1f1f1;
+      border: 1px solid #555;
+    }
+
+    button {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
+      background-color: #333;
+      color: #fff;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    label {
+      font-size: 14px;
+    }
+
+    #toggle-theme {
+      margin-top: 30px;
+      cursor: pointer;
+      color: #007BFF;
+      background: none;
+      border: none;
+      font-size: 16px;
+    }
+
+    #toggle-theme:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
   <h1>Password Manager</h1>
   <div class="container">
-    <div class="box">
+    <div class="panel">
       <h3>Encryptor</h3>
       <textarea id="textInput" placeholder="Enter text..."></textarea>
-      <br />
-      <label><input type="checkbox" id="spacingCheckbox" checked /> Add space between hex characters</label>
-      <textarea id="hexOutput" class="output-box" readonly></textarea>
-      <br />
-      <button class="copy-btn" onclick="copyToClipboard('hexOutput')">Copy</button>
+      <label><input type="checkbox" id="spaceOption" checked> Add space between hex characters</label>
+      <textarea id="hexOutput" readonly></textarea>
+      <button onclick="copyToClipboard('hexOutput')">Copy</button>
     </div>
-
-    <div class="box">
+    <div class="panel">
       <h3>Decryptor</h3>
       <textarea id="hexInput" placeholder="Enter hex..."></textarea>
-      <textarea id="textOutput" class="output-box" readonly></textarea>
-      <br />
-      <button class="copy-btn" onclick="copyToClipboard('textOutput')">Copy</button>
+      <textarea id="textOutput" readonly></textarea>
+      <button onclick="copyToClipboard('textOutput')">Copy</button>
     </div>
   </div>
 
+  <button id="toggle-theme" onclick="toggleTheme()">Toggle Dark/Light</button>
+
   <script>
-    const textInput = document.getElementById("textInput");
-    const spacingCheckbox = document.getElementById("spacingCheckbox");
-    const hexOutput = document.getElementById("hexOutput");
+    const textInput = document.getElementById('textInput');
+    const spaceOption = document.getElementById('spaceOption');
+    const hexOutput = document.getElementById('hexOutput');
+    const hexInput = document.getElementById('hexInput');
+    const textOutput = document.getElementById('textOutput');
 
-    const hexInput = document.getElementById("hexInput");
-    const textOutput = document.getElementById("textOutput");
-
-    // Convert text to hex
-    function updateHexOutput() {
-      const useSpacing = spacingCheckbox.checked;
-      const hex = [...textInput.value]
-        .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
-        .join(useSpacing ? " " : "");
-      hexOutput.value = hex;
+    function textToHex(text, withSpaces) {
+      return Array.from(text)
+        .map(char => char.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join(withSpaces ? ' ' : '');
     }
 
-    // Convert hex to text
-    function updateTextOutput() {
-      const hexStr = hexInput.value.replace(/[^a-fA-F0-9]/g, '');
-      const result = [];
-      for (let i = 0; i < hexStr.length; i += 2) {
-        const hexPair = hexStr.slice(i, i + 2);
-        result.push(String.fromCharCode(parseInt(hexPair, 16)));
+    function hexToText(hex) {
+      hex = hex.replace(/[^a-fA-F0-9]/g, '');
+      let text = '';
+      for (let i = 0; i < hex.length; i += 2) {
+        text += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
       }
-      textOutput.value = result.join('');
+      return text;
     }
 
-    // Copy function
+    function updateHexOutput() {
+      const input = textInput.value;
+      const withSpaces = spaceOption.checked;
+      hexOutput.value = textToHex(input, withSpaces);
+    }
+
+    function updateTextOutput() {
+      const input = hexInput.value;
+      textOutput.value = hexToText(input);
+    }
+
     function copyToClipboard(id) {
-      const el = document.getElementById(id);
-      el.select();
-      document.execCommand("copy");
+      const textarea = document.getElementById(id);
+      textarea.select();
+      document.execCommand('copy');
     }
 
-    // Event listeners
-    textInput.addEventListener("input", updateHexOutput);
-    spacingCheckbox.addEventListener("change", updateHexOutput);
-    hexInput.addEventListener("input", updateTextOutput);
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    textInput.addEventListener('input', updateHexOutput);
+    spaceOption.addEventListener('change', updateHexOutput);
+    hexInput.addEventListener('input', updateTextOutput);
   </script>
 </body>
 </html>
