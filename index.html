@@ -126,14 +126,14 @@
   <input type="checkbox" id="spaceToggle">
   Add space between hex characters
 </label>
-      <div class="output output-box" id="hexOutput"></div>
+      <textarea readonly class="output output-box" id="hexOutput"></textarea>
       <button onclick="copyToClipboard('hexOutput')">Copy</button>
     </div>
 
     <div class="card">
       <h2>Decryptor</h2>
       <textarea id="hexInput" placeholder="Enter hex..."></textarea>
-      <div class="output output-box" id="textOutput"></div>
+      <textarea readonly class="output output-box" id="textOutput"></textarea>
       <button onclick="copyToClipboard('textOutput')">Copy</button>
     </div>
   </div>
@@ -150,10 +150,11 @@
   // Encode to Hex with optional spacing
   function updateHexOutput() {
     const useSpacing = spaceToggle.checked;
-    hexOutput.textContent = [...textInput.value]
-      .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
-      .join(useSpacing ? " " : "");
-  }
+    hexOutput.value = [...textInput.value]
+  .map(c => c.charCodeAt(0).toString(16).padStart(2, '0'))
+  .join(useSpacing ? " " : "");
+
+textOutput.value = chars.map(c => String.fromCharCode(c)).join("");
 
   textInput.addEventListener("input", updateHexOutput);
   spaceToggle.addEventListener("change", updateHexOutput);
@@ -173,9 +174,10 @@
   });
 
   function copyToClipboard(id) {
-    const text = document.getElementById(id).textContent;
-    navigator.clipboard.writeText(text);
-  }
+  const el = document.getElementById(id);
+  el.select();
+  document.execCommand("copy");
+}
 
   function toggleTheme() {
     const html = document.documentElement;
