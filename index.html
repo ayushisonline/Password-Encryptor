@@ -3,44 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Password Manager</title>
+  <title>Encrypter</title>
   <style>
+    :root {
+      --bg-light: #f7f7f7;
+      --bg-dark: #121212;
+      --text-light: #111;
+      --text-dark: #f1f1f1;
+      --panel-light: #eee;
+      --panel-dark: #1f1f1f;
+      --btn: #333;
+      --btn-hover: #555;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #f7f7f7;
+      background-color: var(--bg-light);
+      color: var(--text-light);
       transition: background-color 0.3s, color 0.3s;
-      color: #111;
     }
 
     body.dark {
-      background-color: #121212;
-      color: #f1f1f1;
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
     }
 
     h1 {
       margin-bottom: 30px;
+      font-size: 2rem;
     }
 
     .container {
       display: flex;
+      flex-wrap: wrap;
       gap: 40px;
+      justify-content: center;
     }
 
     .panel {
-      background-color: #eee;
-      padding: 20px;
-      border-radius: 10px;
+      background-color: var(--panel-light);
+      padding: 40px;
+      border-radius: 12px;
       width: 300px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
       transition: background-color 0.3s;
     }
 
     body.dark .panel {
-      background-color: #1f1f1f;
+      background-color: var(--panel-dark);
     }
 
     textarea {
@@ -48,7 +63,7 @@
       height: 100px;
       resize: none;
       padding: 10px;
-      border-radius: 5px;
+      border-radius: 8px;
       border: 1px solid #ccc;
       margin-top: 10px;
       margin-bottom: 10px;
@@ -66,56 +81,93 @@
     }
 
     button {
-      padding: 6px 16px;
+      padding: 8px 16px;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      background-color: #333;
+      background-color: var(--btn);
       color: #fff;
+      font-weight: 500;
+      font-size: 14px;
       transition: background-color 0.3s;
     }
 
     button:hover {
-      background-color: #555;
+      background-color: var(--btn-hover);
     }
 
     label {
       font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     #toggle-theme {
       margin-top: 30px;
       cursor: pointer;
-      color: #007BFF;
       background: none;
       border: none;
       font-size: 16px;
+      color: #007BFF;
     }
 
     #toggle-theme:hover {
       text-decoration: underline;
     }
+
+    .copy-btn {
+      position: relative;
+      display: inline-block;
+    }
+
+    .copied-msg {
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #28a745;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .copy-btn.show-msg .copied-msg {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
-  <h1>Password Manager</h1>
+  <h1>🔐 Password Manager</h1>
+
   <div class="container">
     <div class="panel">
       <h3>Encryptor</h3>
       <textarea id="textInput" placeholder="Enter text..."></textarea>
       <label><input type="checkbox" id="spaceOption" checked> Add space between hex characters</label>
       <textarea id="hexOutput" readonly></textarea>
-      <button onclick="copyToClipboard('hexOutput')">Copy</button>
+      <div class="copy-btn" id="copyHexWrap">
+        <span class="copied-msg">✅ Copied!</span>
+        <button onclick="copyToClipboard('hexOutput', 'copyHexWrap')">📋 Copy</button>
+      </div>
     </div>
+
     <div class="panel">
       <h3>Decryptor</h3>
       <textarea id="hexInput" placeholder="Enter hex..."></textarea>
       <textarea id="textOutput" readonly></textarea>
-      <button onclick="copyToClipboard('textOutput')">Copy</button>
+      <div class="copy-btn" id="copyTextWrap">
+        <span class="copied-msg">✅ Copied!</span>
+        <button onclick="copyToClipboard('textOutput', 'copyTextWrap')">📋 Copy</button>
+      </div>
     </div>
   </div>
 
-  <button id="toggle-theme" onclick="toggleTheme()">Toggle Dark/Light</button>
+  <button id="toggle-theme" onclick="toggleTheme()">🌓 Toggle Dark/Light</button>
 
   <script>
     const textInput = document.getElementById('textInput');
@@ -150,10 +202,14 @@
       textOutput.value = hexToText(input);
     }
 
-    function copyToClipboard(id) {
+    function copyToClipboard(id, wrapId) {
       const textarea = document.getElementById(id);
+      const wrapper = document.getElementById(wrapId);
       textarea.select();
       document.execCommand('copy');
+
+      wrapper.classList.add('show-msg');
+      setTimeout(() => wrapper.classList.remove('show-msg'), 1500);
     }
 
     function toggleTheme() {
